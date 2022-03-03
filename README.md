@@ -3,7 +3,7 @@
 ## installation guide
 
 - run npm install
-- run Node index.js
+- run Node index.js / nodemon index.js (latter is adviced)
 - enjoy the fun
 
 ## ports
