@@ -20,7 +20,6 @@
     | claimType |          |
     | date      |          |
     | location  |          |
-    |-----------|----------|
 
 - ### /claims/:code
     Get the claim bound to the given code
