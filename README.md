@@ -1,4 +1,4 @@
-### API for the eindopdracht for android
+# API for the eindopdracht for android
 
 ## installation guide
 
