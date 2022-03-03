@@ -1,0 +1,23 @@
+{
+  "name": "android-eindopdracht-api",
+  "version": "1.0.0",
+  "description": "API for android eindopdracht",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awaarts/android-eindopdracht-api.git"
+  },
+  "author": "Alex Waarts",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/awaarts/android-eindopdracht-api/issues"
+  },
+  "homepage": "https://github.com/awaarts/android-eindopdracht-api#readme",
+  "dependencies": {
+    "express": "^4.17.3",
+    "mongodb": "^4.4.1"
+  }
+}
