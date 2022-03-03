@@ -13,8 +13,8 @@
 
 - ### /claims
     A post url where you can add a new Claim
-    |----------------------|
-    |parameters:           |
+    |-----------|----------|
+    |parameters:|          |
     |-----------|----------|
     | code      | required |
     | claimType |          |
