@@ -13,13 +13,14 @@
 
 - ### /claims
     A post url where you can add a new Claim
-    parameters:
-    +-----------+----------+
+    |----------------------|
+    |parameters:           |
+    |-----------|----------|
     | code      | required |
     | claimType |          |
     | date      |          |
     | location  |          |
-    +-----------+----------+
+    |-----------|----------|
 
 - ### /claims/:code
     Get the claim bound to the given code
