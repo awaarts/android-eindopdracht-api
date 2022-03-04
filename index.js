@@ -57,6 +57,19 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
             );
         });
 
+        app.get('/claims/pending', (req, res) => {
+            console.log('getting claims for ' + req.params.code);
+            dbo.collection('claims').find({status: 'pending'}).toArray(
+                function(error, result) {
+                    if (error) {
+                        throw error;
+                    }
+                    console.log(result);
+                    res.json(result);
+                }
+            );
+        });
+        
         app.put('/claims/:id', (req, res) => {
             newValues = {};
             if (req.body.claimType) {
