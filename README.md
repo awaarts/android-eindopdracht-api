@@ -13,7 +13,6 @@
 
 - ### /claims
     A post url where you can add a new Claim
-    |-----------|----------|
     |parameters:|          |
     |-----------|----------|
     | code      | required |
@@ -27,3 +26,8 @@
     
 - ### /claims/:id
     Update or delete the given claim (found by id). When updating, also give in the body the parameters that need to change (see /claims)
+    
+- ### Statuses
+    pending
+    closed
+    approved
