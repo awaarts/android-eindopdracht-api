@@ -83,6 +83,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
         });
         
         app.put('/claims/:id', (req, res) => {
+            console.log(req.body.claimType)
             newValues = {};
             if (req.body.claimType) {
                 newValues.claimType = req.body.claimType
@@ -97,7 +98,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
                 newValues.status = req.body.status
             }
             if (req.body.image) {
-                newValues.status = req.body.image
+                newValues.image = req.body.image
             }
 
             console.log('updating claim for ' + req.params.code);
