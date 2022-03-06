@@ -57,6 +57,18 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
             );
         });
 
+        app.get('/claims/id/:id', (req, res) => {
+            console.log('getting claims for ' + req.params.id);
+            dbo.collection('claims').findOne({id: ObjectID(req.params.id)}, 
+                function(error, result) {
+                    if (error) {
+                        throw error;
+                    }
+                    res.json(result);
+                }
+            );
+        });
+
         app.get('/claims/pending', (req, res) => {
             console.log('getting claims for ' + req.params.code);
             dbo.collection('claims').find({status: 'pending'}).toArray(
@@ -91,7 +103,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
             console.log('updating claim for ' + req.params.code);
             dbo.collection('claims').updateOne({id: ObjectID(req.params.id)}, {$set: newValues}, function(error, response) {
                 if (error) throw error;
-                res.json(response)
+                res.json({"success": true})
             } );
         });
 
@@ -99,7 +111,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
             console.log('deleting claim of ' + req.params.code);
             dbo.collection('claims').deleteOne({id: ObjectID(req.params.id)}, function(error, obj) {
                 if (error) throw error;
-                res.json(obj);
+                res.json({"success": false});
             } );
         });
 
