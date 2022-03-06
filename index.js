@@ -69,8 +69,8 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
             );
         });
 
-        app.get('/claims/pending', (req, res) => {
-            console.log('getting claims for ' + req.params.code);
+        app.get('/pendingclaims/', (req, res) => {
+            console.log('getting pending claims');
             dbo.collection('claims').find({status: 'pending'}).toArray(
                 function(error, result) {
                     if (error) {
@@ -80,6 +80,10 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
                     res.json(result);
                 }
             );
+        });
+
+        app.get('/test', (req, res) => {
+            console.log('test');
         });
         
         app.put('/claims/:id', (req, res) => {
