@@ -6,8 +6,8 @@ const { request, response } = require("express");
 const res = require('express/lib/response');
 
 var app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({limit: '50mb', extended: true}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 var MongoClient = mongodb.MongoClient;
 
@@ -29,18 +29,19 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
                 console.log('Added claim to account ' + req.body.code);
                 dbo.collection('claims').insertOne({
                     id: new ObjectID(),
-                    code: req.body.code,
+                    code: parseInt(req.body.code),
                     claimType: req.body.claimType,
                     date: req.body.date,
                     location: req.body.location,
+                    image: req.body.image,
                     status: 'pending'
                 })
-                res.send('success');
+                res.json(JSON.parse('{"success": true}'));
     
             } else {
                 const message = 'A code must be given to add the claim to...'
                 console.log(message);
-                res.send(message)
+                res.json(JSON.parse('{"success": false}'));
             }
         });
 
@@ -51,7 +52,6 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
                     if (error) {
                         throw error;
                     }
-                    console.log(result);
                     res.json(result);
                 }
             );
@@ -83,6 +83,9 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
             }
             if (req.body.status) {
                 newValues.status = req.body.status
+            }
+            if (req.body.image) {
+                newValues.status = req.body.image
             }
 
             console.log('updating claim for ' + req.params.code);
