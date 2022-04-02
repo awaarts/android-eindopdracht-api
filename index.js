@@ -4,6 +4,8 @@ const express = require('express');
 var bodyParser = require("body-parser");
 const { request, response } = require("express");
 const res = require('express/lib/response');
+const bcrypt = require('bcrypt')
+const saltRound = 10;
 
 var app = express();
 app.use(bodyParser.json({limit: '50mb', extended: true}));
@@ -18,106 +20,71 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
         console.log('Kan geen connectie maken met de MongoDB server. Error!', err);
     else
     {
-        const dbo = db.db('claims');
+        const dbo = db.db('IOS-db');
 
         app.get('/', (request, response) => {
             response.send('<h1>Hi, welcome to our API!</h1>')
         });
 
-        app.post('/claims', (req, res) => {
-            if (req.body.code) {
-                console.log('Added claim to account ' + req.body.code);
-                dbo.collection('claims').insertOne({
-                    id: new ObjectID(),
-                    code: parseInt(req.body.code),
-                    claimType: req.body.claimType,
-                    date: req.body.date,
-                    location: req.body.location,
-                    image: req.body.image,
-                    status: 'pending'
-                })
-                res.json(JSON.parse('{"success": true}'));
-    
+        app.post('/account', (req, res) => {
+            if (req.body.username && req.body.password) {
+                console.log('Added account ' + req.body.username);
+                dbo.collection('account').findOne({username: req.body.username})
+                .then((user) => {
+                    console.log(user)
+                    if (!user) {
+                        bcrypt.hash(req.body.password, saltRound).then((password) => {
+                            dbo.collection('account').insertOne({
+                                id: new ObjectID(),
+                                username: req.body.username, unique: true,
+                                password: password
+                            });
+                            res.status(200);
+                            res.json(JSON.parse('{"success": true}'));
+                        }).catch((e) => {
+                            res.status(500);
+                            res.json(e)
+                        })
+                    } else {
+                        const message = 'The username given already exist!'
+                        console.log(message);
+                        res.status(403)
+                        res.json(JSON.parse('{"success": false}'));
+                    }
+                }).catch((e) => {
+                    res.status(500);
+                    res.json(e);
+                });
             } else {
-                const message = 'A code must be given to add the claim to...'
-                console.log(message);
+                res.status(442)
                 res.json(JSON.parse('{"success": false}'));
             }
         });
 
-        app.get('/claims/:code', (req, res) => {
-            console.log('getting claims for ' + req.params.code);
-            dbo.collection('claims').find({code: parseInt(req.params.code)}).toArray(
-                function(error, result) {
-                    if (error) {
-                        throw error;
-                    }
-                    res.json(result);
-                }
-            );
-        });
-
-        app.get('/claims/id/:id', (req, res) => {
-            console.log('getting claims for ' + req.params.id);
-            dbo.collection('claims').findOne({id: ObjectID(req.params.id)}, 
-                function(error, result) {
-                    if (error) {
-                        throw error;
-                    }
-                    res.json(result);
-                }
-            );
-        });
-
-        app.get('/pendingclaims/', (req, res) => {
-            console.log('getting pending claims');
-            dbo.collection('claims').find({status: 'pending'}).toArray(
-                function(error, result) {
-                    if (error) {
-                        throw error;
-                    }
-                    console.log(result);
-                    res.json(result);
-                }
-            );
-        });
-
-        app.get('/test', (req, res) => {
-            console.log('test');
-        });
-        
-        app.put('/claims/:id', (req, res) => {
-            console.log(req.body.claimType)
-            newValues = {};
-            if (req.body.claimType) {
-                newValues.claimType = req.body.claimType
+        app.get("/account", (req, res) => {
+            console.log(req.query)
+            if (req.query.username && req.query.password) {
+                dbo.collection('account').findOne({username: req.query.username})
+                    .then((user) => {
+                        console.log(user)
+                        if (!user) {
+                            res.status(404).json({message: 'account not found'})
+                        } else {
+                            bcrypt.compare(req.query.password, user.password).then((checkResult) => {
+                                if (checkResult) {
+                                    res.status(200).json({success: true});
+                                } else {
+                                    res.status(400).json({success: false});
+                                }
+                            }).catch(error => {
+                                res.status(400).json({message: error.message})
+                            });
+                        }
+                    })
+                    .catch((error) => {res.status(400).json({message: error.message})})
+            } else {
+                res.status(400).json({message: 'send both username and password for this'})
             }
-            if (req.body.date) {
-                newValues.date = req.body.date
-            }
-            if (req.body.location) {
-                newValues.location = req.body.location
-            }
-            if (req.body.status) {
-                newValues.status = req.body.status
-            }
-            if (req.body.image) {
-                newValues.image = req.body.image
-            }
-
-            console.log('updating claim for ' + req.params.code);
-            dbo.collection('claims').updateOne({id: ObjectID(req.params.id)}, {$set: newValues}, function(error, response) {
-                if (error) throw error;
-                res.json({"success": true})
-            } );
-        });
-
-        app.delete('/claims/:id', (req, res) => {
-            console.log('deleting claim of ' + req.params.code);
-            dbo.collection('claims').deleteOne({id: ObjectID(req.params.id)}, function(error, obj) {
-                if (error) throw error;
-                res.json({"success": false});
-            } );
         });
 
         app.listen(3000, () => {
