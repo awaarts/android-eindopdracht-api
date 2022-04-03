@@ -27,6 +27,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
         });
 
         app.post('/account', (req, res) => {
+            console.log(req.body)
             if (req.body.username && req.body.password) {
                 console.log('Added account ' + req.body.username);
                 dbo.collection('account').findOne({username: req.body.username})
@@ -120,7 +121,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
 
         app.put("/journey", (req, res) => {
             if (req.body.id) {
-                dbo.collection('journey').findOne({_id: req.body.id})
+                dbo.collection('journey').findOne({id: ObjectID(req.body.id)})
                     .then((journey) => {
                         if (!journey) {
                             res.status(404).json({message: 'journey not found'})
@@ -133,10 +134,45 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
                             if (req.body.userid) {
                                 newValues.userid = req.body.userid;
                             }
-                            dbo.collection('journey').updateOne({id: journey._id}, {$set: newValues}, function(error, response) {
+                            dbo.collection('journey').updateOne({id: journey.id}, {$set: newValues}, function(error, response) {
                                 if (error) throw error;
                                 res.json({"success": true})
                             })
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error.message)
+                        res.status(400).json({message: error.message})
+                    })
+            } else {
+                res.status(400).json({message: 'send journey id for this'})
+            }
+        });
+
+        app.get("/journey", (req, res) => {
+            if (req.query.username) {
+                dbo.collection('account').findOne({username: req.query.username})
+                    .then((user) => {
+                        if (!user) {
+                            res.status(404).json({message: 'account not found'})
+                        } else {
+                            if (req.query.status) {
+                                dbo.collection('journey').find({userid: user._id, state: req.query.status})
+                                    .toArray((err, result) => {
+                                        if (err) {
+                                            res.status(400);
+                                        }
+                                        res.status(200).json(result)
+                                    })
+                            } else {
+                                dbo.collection('journey').find({userid: user._id})
+                                    .toArray((err, result) => {
+                                        if (err) {
+                                            res.status(400);
+                                        }
+                                        res.status(200).json(result)
+                                    })
+                            }
                         }
                     })
                     .catch((error) => {res.status(400).json({message: error.message})})
@@ -144,41 +180,9 @@ MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
                 res.status(400).json({message: 'send username for this'})
             }
         });
+    
+        app.listen(3000, () => {
+            console.log('Connectie met de MongoDB server is gemaakt. Port 3000 wordt gebruikt.')
+        });
     }
-
-    app.get("/journey", (req, res) => {
-        if (req.query.username) {
-            dbo.collection('account').findOne({username: req.query.username})
-                .then((user) => {
-                    if (!user) {
-                        res.status(404).json({message: 'account not found'})
-                    } else {
-                        if (req.query.status) {
-                            dbo.collection('journey').find({userid: user._id, state: req.query.status})
-                                .toArray((err, result) => {
-                                    if (err) {
-                                        res.status(400);
-                                    }
-                                    res.status(200).json(result)
-                                })
-                        } else {
-                            dbo.collection('journey').find({userid: user._id})
-                                .toArray((err, result) => {
-                                    if (err) {
-                                        res.status(400);
-                                    }
-                                    res.status(200).json(result)
-                                })
-                        }
-                    }
-                })
-                .catch((error) => {res.status(400).json({message: error.message})})
-        } else {
-            res.status(400).json({message: 'send username for this'})
-        }
-    });
-
-    app.listen(3000, () => {
-        console.log('Connectie met de MongoDB server is gemaakt. Port 3000 wordt gebruikt.')
-    })
 })
